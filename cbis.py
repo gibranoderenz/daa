@@ -90,10 +90,15 @@ def verify_validity(n):
 def calculate_cbis_performance():
     ns = [200, 2000, 20000]
     for n in ns:
+        print(f'Performance for n = {n}:')
         verify_validity(n)
+        print('\n')
         get_elapsed_time(n)
+        print('\n')
         get_memory_usage(n)
+        print('\n')
         print(f'Calculation complete for n = {n}')
+        print('-------------------------------------------')
 
     print('===' * 50)
     print('Performance calculation complete.')
