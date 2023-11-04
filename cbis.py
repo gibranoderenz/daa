@@ -1,5 +1,6 @@
 from math import floor
-import random, time, tracemalloc
+import random, time, tracemalloc, sys
+from util import generate_test_list, parse_list
 
 def cbis(nums: list[int]):
     # Source: https://www.sciencedirect.com/science/article/abs/pii/S0167739X17318423
@@ -47,73 +48,52 @@ def place_inserter(nums, start, end):
     nums[start] = temp
     return nums
 
-def generate_random_list(n):
-    # Source: https://www.tutorialspoint.com/generating-random-number-list-in-python
-    random_test_list = []
-    for _ in range(n):
-        random_number = random.randint(1, n)
-        random_test_list.append(random_number)
-    return random_test_list
-
-def generate_test_list(n):
-    sorted_test_list = sorted(generate_random_list(n))
-    random_test_list = generate_random_list(n)
-    reversed_test_list = sorted(generate_random_list(n), reverse=True)
-    
-    return sorted_test_list, random_test_list, reversed_test_list
-
 def get_elapsed_time(n):
-    sorted, random, reversed = generate_test_list(n)
-
-    start = time.time()
-    cbis(sorted)
-    end = time.time()
-    sorted_time = (end - start) * 1000
-
-    start = time.time()
-    cbis(random)
-    end = time.time()
-    random_time = (end - start) * 1000
-
-    start = time.time()
-    cbis(reversed)
-    end = time.time()
-    reversed_time = (end - start) * 1000
-
-    print(f'Sorted list time for CBIS (n = {n}): {sorted_time}')
-    print(f'Random list time for CBIS (n = {n}): {random_time}')
-    print(f'Reversed list time for CBIS (n = {n}): {reversed_time}\n')
-
+    print('Calculating elapsed time for CBIS...')
+    
+    EPOCH = 10
+    types = ['sorted', 'random', 'reversed']
+    
+    for type in types:
+        sum = 0
+        for i in range(EPOCH):
+            lst = parse_list(n, type)
+            start = time.time()
+            cbis(lst)
+            end = time.time()
+            current_time = (end - start) * 1000
+            sum += current_time
+        avg = sum / EPOCH
+        print(f'Average sorting time for CBIS (n = {n}, input type = {type}): {avg} ms')
+        
 def get_memory_usage(n):
-    sorted, random, reversed = generate_test_list(n)
-
-    tracemalloc.start()
-    cbis(sorted)
-    print(f'Sorted memory usage for CBIS (n = {n}): {tracemalloc.get_traced_memory()}')
-    tracemalloc.stop()
-
-    tracemalloc.start()
-    cbis(random)
-    print(f'Random memory usage for CBIS (n = {n}): {tracemalloc.get_traced_memory()}')
-    tracemalloc.stop()
-
-    tracemalloc.start()
-    cbis(reversed)
-    print(f'Reversed memory usage for CBIS (n = {n}): {tracemalloc.get_traced_memory()}')
-    tracemalloc.stop()
-
+    print(f'Calculating memory usage for CBIS (n = {n})...')
+    
+    types = ['sorted', 'random', 'reversed']
+    for type in types:
+        lst = parse_list(n, type)
+        print(f'Memory usage (array input type = {type}):')
+        tracemalloc.start()
+        cbis(lst)
+        current_size, peak_size = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+        print(f"{current_size=}, {peak_size=} (in bytes)")
+        print('-------------------------------------------')
 
 def verify_validity(n):
-    sorted_list, random_list, reversed_list = generate_test_list(n)
-    print(f'n = {n}')
-    print(sorted(sorted_list) == cbis(sorted_list)) # Expected: True
-    print(sorted(random_list) == cbis(random_list)) # Expected: True
-    print(sorted(reversed_list) == cbis(reversed_list)) # Expected: True
+    print(f'Verifying CBIS sorting algorithm correctness (n = {n})...')
+    types = ['sorted', 'random', 'reversed']
+    for type in types:
+        lst = parse_list(n, type)
+        print(f'Is correctly sorted for array input type of {type}: {sorted(lst) == cbis(lst)}') # Expected: True
 
-get_elapsed_time(200)
-get_elapsed_time(2000)
-get_elapsed_time(20000)
+def calculate_cbis_performance():
+    ns = [200, 2000, 20000]
+    for n in ns:
+        verify_validity(n)
+        get_elapsed_time(n)
+        get_memory_usage(n)
+        print(f'Calculation complete for n = {n}')
 
-get_memory_usage(200)
-get_memory_usage(2000)
-get_memory_usage(20000)
+    print('===' * 50)
+    print('Performance calculation complete.')
